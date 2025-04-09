@@ -1,3 +1,5 @@
+from src.annealing import Domain
+from typing import override
 import numpy
 
 class CNF:
@@ -26,7 +28,30 @@ class CNF:
         num_unsatisfied = self.num_clauses - num_satisfied
         return num_satisfied, num_unsatisfied
     
-# talvez o número de termos seja desnecessario
+
+class SATDomain(Domain):
+    def __init__(self, cnf_path, flip_prob):
+        self.flip_prob = flip_prob
+        self.instance = CNF(cnf_path)
+    
+    @override
+    def get_neighbour(self, current):
+        flip_mask = numpy.random.random(current.size) < self.flip_prob
+        return numpy.bitwise_xor(current, flip_mask)
+    
+    @override
+    def random_value(self):
+        return numpy.random.rand(self.instance.num_vars) > 0.5
+    
+    @override    
+    def cost(self, value):
+        _, num_unsatisfied = self.instance.get_valoration_metrics(value)
+        return num_unsatisfied
+    
+    @override
+    def get_domain_label(self):
+        return f'3SAT {self.instance.num_vars} variáveis, {self.instance.num_clauses} cláusulas'
+
 def get_header_info(cnf_file):
     header = cnf_file.readline()
     return map(int, header.split()[1:])

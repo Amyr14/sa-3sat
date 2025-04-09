@@ -1,1 +1,1 @@
-from .annealing import SimulatedAnnealing, Domain, Cooler, FastCooler, History
+from .annealing import SimulatedAnnealing, Domain, get_cooling_schedule_label
