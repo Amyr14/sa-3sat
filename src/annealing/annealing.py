@@ -1,16 +1,16 @@
 import numpy
 from abc import abstractmethod, ABC
     
-def cooling_schedule1(i, t0, t_final, i_max):
-    return t0 * (t_final/t0) ** (i/i_max)
+def cooling_schedule1(i, t0, t_final, eval_max):
+    return t0 * (t_final/t0) ** (i/eval_max)
 
-def cooling_schedule2(i, t0, t_final, i_max):
-    A = ((t0 - t_final) * (i_max + 1)) / i_max
+def cooling_schedule2(i, t0, t_final, eval_max):
+    A = ((t0 - t_final) * (eval_max + 1)) / eval_max
     B = t0 - A
     return A / (i+1) + B
 
-def cooling_schedule3(i, t0, t_final, i_max):
-    return 0.5 * (t0 - t_final) * (1 - numpy.tanh(10*i/i_max - 5)) + t_final
+def cooling_schedule3(i, t0, t_final, eval_max):
+    return 0.5 * (t0 - t_final) * (1 - numpy.tanh(10*i/eval_max - 5)) + t_final
 
 COOLING_SCHEDULES = [
     cooling_schedule1,
@@ -47,53 +47,54 @@ class Domain(ABC):
 
 
 class SimulatedAnnealing:
-    def __init__(self, cooling_schedule_i: int, domain: Domain, mode='minimize'):
+    def __init__(self, cooling_schedule_i: int, domain: Domain):
         self.domain = domain
-        self.mode = mode
         self.cooling_schedule = COOLING_SCHEDULES[cooling_schedule_i - 1]
 
-    def run(self, t0, t_final, i_max) -> dict:
+    def run(self, t0, t_final, sa_max, eval_max) -> dict:
+        iter_t = 0
+        i_eval = 0
+        t = t0
         current = self.domain.random_value()
         current_energy = self.domain.cost(current)
         best_ever = current
         best_ever_energy = current_energy
-        t = t0
-        scores = [current_energy]
+        
+        # Para registro
+        energies = [current_energy]
         temperatures = [t0]
-        i = 0
         
-        while i < i_max:
-            neighbour = self.domain.get_neighbour(current)
-            neighbour_energy = self.domain.cost(neighbour)
-            energy_delta = neighbour_energy - current_energy
+        while i_eval < eval_max:
+            i_eval += 1
             
-            if is_better_solution(energy_delta, self.mode) or accept_worse(energy_delta, t):
-                current = neighbour
-                current_energy = neighbour_energy
+            while iter_t < sa_max:
+                iter_t += 1
+                neighbour = self.domain.get_neighbour(current)
+                neighbour_energy = self.domain.cost(neighbour)
+                energy_delta = neighbour_energy - current_energy
                 
-            if is_best_ever(current_energy, best_ever_energy, self.mode):
-                best_ever = current
-                best_ever_energy = current_energy
+                if energy_delta < 0:
+                    current = neighbour
+                    current_energy = neighbour_energy
+                    if neighbour_energy < best_ever_energy:
+                        best_ever = neighbour
+                        best_ever_energy = neighbour_energy
                 
-            t = self.cooling_schedule(i, t0, t_final, i_max)
-            i += 1
+                elif accept_worse(energy_delta, t):
+                    current = neighbour
+                    current_energy = neighbour_energy
             
-            # Registro de valores
+            t = self.cooling_schedule(i_eval, t0, t_final, eval_max)
+            iter_t = 0
             temperatures.append(t)
-            scores.append(current_energy)
-        
+            energies.append(current_energy)
+                
         return {
             'temperatures': temperatures,
-            'scores': scores,
+            'energies': energies,
             'best_ever': best_ever,
             'best_ever_energy': best_ever_energy,
         }
 
-def is_best_ever(new_score, best, mode):
-    return new_score < best if mode == 'minimize' else new_score > best
-
-def is_better_solution(energy_delta, mode):
-    return energy_delta < 0 if mode == 'minimize' else energy_delta > 0
-
 def accept_worse(energy_delta, temperature):
-    return numpy.random.rand() < numpy.exp(-energy_delta/temperature) if temperature != 0 else False # não funciona em caso de maximização
+    return numpy.random.rand() < numpy.exp(-energy_delta/temperature) if temperature != 0 else False
