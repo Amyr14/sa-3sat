@@ -49,7 +49,7 @@ class SATDomain(Domain):
         return num_unsatisfied
     
     @override
-    def get_domain_label(self):
+    def get_label(self):
         return f'3SAT {self.instance.num_vars} variáveis, {self.instance.num_clauses} cláusulas'
 
 def get_header_info(cnf_file):
