@@ -1,7 +1,7 @@
 import numpy
 from abc import abstractmethod, ABC
     
-def cooling_schedule1(i, t0, t_final, eval_max): # Não parece estar funcionando muito bem
+def cooling_schedule1(i, t0, t_final, eval_max):
     return t0 * (t_final/t0) ** (i/eval_max)
 
 def cooling_schedule2(i, t0, t_final, eval_max):

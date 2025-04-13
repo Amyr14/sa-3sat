@@ -30,18 +30,21 @@ class CNF:
     
 
 class SATDomain(Domain):
-    def __init__(self, cnf_path, flip_prob):
-        self.flip_prob = flip_prob
+    def __init__(self, cnf_path, flip_factor):
+        self.flip_factor = flip_factor
         self.instance = CNF(cnf_path)
     
     @override
     def get_neighbour(self, current):
-        flip_mask = numpy.random.random(current.size) < self.flip_prob
-        return numpy.bitwise_xor(current, flip_mask)
-    
+        num_flips = int(self.flip_factor * current.size)
+        flip_mask = numpy.random.choice(numpy.arange(current.size), size=num_flips, replace=False)
+        new = numpy.copy(current)
+        new[flip_mask] = ~new[flip_mask]
+        return new
+        
     @override
     def random_value(self):
-        return numpy.random.rand(self.instance.num_vars) > 0.5
+        return numpy.random.choice([True, False], size=self.instance.num_vars)
     
     @override    
     def cost(self, value):

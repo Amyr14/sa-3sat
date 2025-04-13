@@ -9,12 +9,14 @@ from src.sat import SATDomain
 
 # Configurações de diretório
 FORMULAS_DIR = './instances'
-RESULTS_DIR = './results/sa_max'
+RESULTS_DIR = './results/cooling_schedules'
 
 # Configurações de experimento
-COOLING_SCHEDULE = 2
-SA_MAX_VALUES = (1, 5, 10)
+COOLING_SCHEDULES = [1, 2, 3]
 EVAL_NUM = 100000
+SA_MAX = 1
+T0 = 200
+T_FINAL = 1
 FLIP_FACTOR = 0.05
 
 if not os.path.exists(RESULTS_DIR):
@@ -35,36 +37,35 @@ plot_axes = [ax1, ax2, ax3]
 
 for instance, ax in zip(instances, plot_axes):
     print(instance.get_label())
-    algorithm = SimulatedAnnealing(
-            cooling_schedule_i=COOLING_SCHEDULE,
-            domain=instance
-        )
+    results_dict = {cooling: [] for cooling in COOLING_SCHEDULES}
     
-    # Resultados referentes a cada SaMax
-    results_dict = {sa_max: [] for sa_max in SA_MAX_VALUES}
+    for cooling in COOLING_SCHEDULES:
+        algorithm = SimulatedAnnealing(
+                cooling_schedule_i=cooling,
+                domain=instance
+            )
     
-    for sa_max in SA_MAX_VALUES:
-        print(f'SaMax: {sa_max}')
         for i in range(30):
             print(f'Iteração {i}')
             result = algorithm.run(
-                t0=200,
-                t_final=1,
-                sa_max=sa_max,
+                t0=T0,
+                t_final=T_FINAL,
+                sa_max=SA_MAX,
                 eval_max=EVAL_NUM,
             )
             best_ever = result['best_ever_energy']
-            results_dict.get(sa_max).append(best_ever)
+            results_dict.get(cooling).append(best_ever)
     
     results_df = pd.DataFrame(results_dict)
-    mean_std_dict.update({instance.get_label(): [(sa_max, np.mean(results_dict[sa_max]).item(), np.std(results_dict[sa_max]).item()) for sa_max in SA_MAX_VALUES]})
+    mean_std_dict.update({instance.get_label(): [(cooling, np.mean(results_dict[cooling]).item(), np.std(results_dict[cooling]).item()) for cooling in COOLING_SCHEDULES]})
     ax.set_title(instance.get_label())
     ax.set_ylabel('Cláusulas Insatisfeitas')
-    ax.set_xlabel('SaMax')
+    ax.set_xlabel('Rotina de Resfriamento')
+    ax.tick_params(axis='y')
     results_df.plot(kind='box', ax=ax)
 
 plt.tight_layout()
-plt.savefig(os.path.join(RESULTS_DIR, 'sa_max_box_plots.png'))
+plt.savefig(os.path.join(RESULTS_DIR, 'cooling_box_plots.png'))
 
 with open(os.path.join(RESULTS_DIR, 'mean_std.json'), mode='w') as fp:
     mean_std_json = json.dumps(mean_std_dict, indent=4, ensure_ascii=False)
