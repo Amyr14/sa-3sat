@@ -27,7 +27,7 @@ for instance, ax in zip(instances, plot_axes):
     result = algorithm.run(
         t0=200,
         t_final=1,
-        sa_max=3,
+        sa_max=5,
         eval_max=100000,
     )
     energies = result['energies']
