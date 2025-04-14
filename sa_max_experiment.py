@@ -12,10 +12,12 @@ FORMULAS_DIR = './instances'
 RESULTS_DIR = './results/sa_max'
 
 # Configurações de experimento
-COOLING_SCHEDULE = 2
+COOLING_SCHEDULE = 1
 SA_MAX_VALUES = (1, 5, 10)
 EVAL_NUM = 100000
-FLIP_FACTOR = 0.05
+T0 = 100
+T_FINAL = 0.001
+FLIP_FACTOR = 0.01
 
 if not os.path.exists(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
@@ -48,8 +50,8 @@ for instance, ax in zip(instances, plot_axes):
         for i in range(30):
             print(f'Iteração {i}')
             result = algorithm.run(
-                t0=200,
-                t_final=1,
+                t0=T0,
+                t_final=T_FINAL,
                 sa_max=sa_max,
                 eval_max=EVAL_NUM,
             )

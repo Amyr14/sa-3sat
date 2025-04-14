@@ -9,11 +9,11 @@ FORMULAS_DIR = './instances'
 RESULTS_DIR = './results/convergence'
 
 # Configurações de experimento
-COOLING_SCHEDULE = 2
-FLIP_FACTOR = 0.05
-SA_MAX = 5
-T0 = 200
-T_FINAL = 1
+COOLING_SCHEDULE = 1
+FLIP_FACTOR = 0.01
+SA_MAX = 10
+T0 = 100
+T_FINAL = 0.001
 NUM_EVAL = 100000
 
 if not os.path.exists(RESULTS_DIR):

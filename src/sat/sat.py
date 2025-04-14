@@ -36,7 +36,7 @@ class SATDomain(Domain):
     
     @override
     def get_neighbour(self, current):
-        num_flips = int(self.flip_factor * current.size)
+        num_flips = max(int(self.flip_factor * current.size), 1)
         flip_mask = numpy.random.choice(numpy.arange(current.size), size=num_flips, replace=False)
         new = numpy.copy(current)
         new[flip_mask] = ~new[flip_mask]

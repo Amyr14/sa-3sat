@@ -5,9 +5,7 @@ def cooling_schedule1(i, t0, t_final, eval_max):
     return t0 * (t_final/t0) ** (i/eval_max)
 
 def cooling_schedule2(i, t0, t_final, eval_max):
-    A = ((t0 - t_final) * (eval_max + 1)) / eval_max
-    B = t0 - A
-    return A / (i+1) + B
+    return (t0 - t_final) / numpy.cosh(10*i/eval_max) + t_final
 
 def cooling_schedule3(i, t0, t_final, eval_max):
     return 0.5 * (t0 - t_final) * (1 - numpy.tanh(10*i/eval_max - 5)) + t_final
@@ -21,7 +19,7 @@ COOLING_SCHEDULES = [
 # Para facilitar a criação de gráficos
 COOLING_SCHEDULES_LABELS = [
     r'$T_i = T_0 \cdot (\frac{T_N}{T_0})^{\frac{i}{N}}$',
-    r'$T_i = \frac{A}{i + 1} + B$',
+    r'$T_i = \frac{(T_O - T_N)}{\cosh{\frac{10i}{N}}} + T_N'
     r'$\frac{1}{2}(T_0 - T_N)  (1 - \tanh(\frac{10i}{N} - 5) + T_N$'
 ]
 
@@ -97,4 +95,4 @@ class SimulatedAnnealing:
         }
 
 def accept_worse(energy_delta, temperature):
-    return numpy.random.rand() < numpy.exp(-energy_delta/temperature) if temperature != 0 else False
+    return numpy.random.rand() < min(numpy.exp(-energy_delta/temperature), 1.0) if temperature != 0 else False

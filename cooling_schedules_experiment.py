@@ -15,9 +15,9 @@ RESULTS_DIR = './results/cooling_schedules'
 COOLING_SCHEDULES = [1, 2, 3]
 EVAL_NUM = 100000
 SA_MAX = 1
-T0 = 200
-T_FINAL = 1
-FLIP_FACTOR = 0.05
+T0 = 100
+T_FINAL = 0.001
+FLIP_FACTOR = 0.01
 
 if not os.path.exists(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
