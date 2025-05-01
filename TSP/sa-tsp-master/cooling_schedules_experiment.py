@@ -8,23 +8,30 @@ from src.annealing import SimulatedAnnealing
 from src.tsp import TSPDomain
 
 # Configurações de diretório
-FORMULAS_DIR = './instances'
-RESULTS_DIR = './results/cooling_schedules'
+DISTANCES_DIR = './instances/distances'
+RESULTS_DIR = './results/results_tsp/cooling_schedules'
 
 # Configurações de experimento
 COOLING_SCHEDULES = [1, 2, 3]
 EVAL_NUM = 100000
-SA_MAX = 1
-T0 = 100
+SA_MAX = 1 # 1, 5 ou 10
+T0 = 8000
 T_FINAL = 0.001
-FLIP_FACTOR = 0.01
+SWAP_FACTOR = 1 # 1, 3 ou 5
 
 if not os.path.exists(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
 
-files = os.listdir(FORMULAS_DIR)
-paths = [os.path.join(FORMULAS_DIR, f) for f in files]
-instances = [TSPDomain(p, flip_factor=FLIP_FACTOR) for p in paths]
+files = os.listdir(DISTANCES_DIR)
+paths = [os.path.join(DISTANCES_DIR, f) for f in files]
+
+#Usado para rodar apenas um de cada vez, (por conta da necessidade de ser usar diferenes parâmetros)
+#paths.remove("./instances/distances\\kroA100-tsp_matrix.txt")
+paths.remove("./instances/distances\\eil51-tsp_matrix.txt")
+for path in paths:
+    print(path)
+
+instances = [TSPDomain(p, SWAP_factor=SWAP_FACTOR) for p in paths]
 mean_std_dict = {}
 
 fig = plt.figure(figsize=(12, 10))
@@ -34,6 +41,7 @@ ax1 = fig.add_subplot(gs[:2, :2])
 ax2 = fig.add_subplot(gs[:2, 2:])
 ax3 = fig.add_subplot(gs[2:4, 1:3])  
 plot_axes = [ax1, ax2, ax3]
+
 
 for instance, ax in zip(instances, plot_axes):
     print(instance.get_label())
@@ -59,7 +67,7 @@ for instance, ax in zip(instances, plot_axes):
     results_df = pd.DataFrame(results_dict)
     mean_std_dict.update({instance.get_label(): [(cooling, np.mean(results_dict[cooling]).item(), np.std(results_dict[cooling]).item()) for cooling in COOLING_SCHEDULES]})
     ax.set_title(instance.get_label())
-    ax.set_ylabel('Cláusulas Insatisfeitas')
+    ax.set_ylabel('Distância Total')
     ax.set_xlabel('Rotina de Resfriamento')
     ax.tick_params(axis='y')
     results_df.plot(kind='box', ax=ax)

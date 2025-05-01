@@ -9,11 +9,11 @@ import numpy
 
 # Configurações de diretório
 DISTANCES_DIR = './instances/distances'
-RESULTS_DIR = './results/convergence'
+RESULTS_DIR = './results//results_tsp/convergence'
 
 # Configurações de experimento
-COOLING_SCHEDULE = 1
-SWAP_FACTOR = 5 #pode ser 1, 3 ou 5.
+COOLING_SCHEDULE = 2
+SWAP_FACTOR = 1 #pode ser 1, 3 ou 5.
 SA_MAX = 10
 T0 = 100
 T_FINAL = 0.001
@@ -96,6 +96,7 @@ def plot_cities(cities, solution):
     plt.legend()
     plt.show()
 
+#def calculate_distance(vector_best_solution):
 
 
 if not os.path.exists(RESULTS_DIR):
@@ -103,14 +104,22 @@ if not os.path.exists(RESULTS_DIR):
 
 files = os.listdir(DISTANCES_DIR)
 paths = [os.path.join(DISTANCES_DIR, f) for f in files]
+
+paths.remove("./instances/distances\\kroA100-tsp_matrix.txt")
+#paths.remove("./instances/distances\\eil51-tsp_matrix.txt")
+for path in paths:
+    print(path)
+
+
 instances = [TSPDomain(p, SWAP_factor=SWAP_FACTOR) for p in paths]
 
 fig = plt.figure(figsize=(12, 10))
 gs = GridSpec(2, 4, figure=fig)
 
 ax1 = fig.add_subplot(gs[:2, :2])
-ax2 = fig.add_subplot(gs[:2, 2:])
-plot_axes = [ax1, ax2]
+#ax2 = fig.add_subplot(gs[:2, 2:])
+#plot_axes = [ax1, ax2]
+plot_axes = [ax1]
 
 best_solutions = []
 
@@ -127,7 +136,9 @@ for instance, ax in zip(instances, plot_axes):
     )
 
     best_solution = result['best_ever']
+    melhor_distancia = instance.cost(best_solution)
     best_solutions.append((instance.get_label(), best_solution))
+    print(f"\nMelhor distância percorrida para {instance.get_label()}: {melhor_distancia:.2f}")
     
     energies = result['energies']
     temperatures = result['temperatures']
@@ -141,7 +152,7 @@ for instance, ax in zip(instances, plot_axes):
 
     # Plot temperature graph
     ax_temp = ax.twinx()
-    ax_temp.plot(range(len(temperatures)), temperatures, 'r--', label=get_cooling_schedule_label(COOLING_SCHEDULE))
+    ax_temp.plot(range(len(temperatures)), temperatures, 'r--')#, #label=get_cooling_schedule_label(COOLING_SCHEDULE))
     ax_temp.set_ylabel('Temperatura', color='red')
     ax_temp.tick_params(axis='y', labelcolor='red')
 
@@ -162,6 +173,8 @@ for label, vector_best_solution in best_solutions:
     print(f"\nMelhor solução para {label}:")
     print("Ordem das cidades visitadas:", vector_best_solution)
     print(f"Quantidade de cidades: {len(vector_best_solution)}")
+    #best_distance = calculate_distance(vector_best_solution)
+    #print(f"Melhor distância: {best_distance}")
 
     if len(vector_best_solution) == 51:
         path_cities = "instances/points/eil51-tsp.txt"

@@ -8,23 +8,30 @@ from src.annealing import SimulatedAnnealing
 from src.tsp import TSPDomain
 
 # Configurações de diretório
-FORMULAS_DIR = './instances'
-RESULTS_DIR = './results/sa_max'
+DISTANCES_DIR = './instances/distances'
+RESULTS_DIR = './results/results_tsp/sa_max'
 
 # Configurações de experimento
-COOLING_SCHEDULE = 1
+COOLING_SCHEDULE = 2
 SA_MAX_VALUES = (1, 5, 10)
 EVAL_NUM = 100000
-T0 = 100
+T0 = 8000
 T_FINAL = 0.001
-FLIP_FACTOR = 0.01
+SWAP_FACTOR = 1 # 1, 3 ou 5
 
 if not os.path.exists(RESULTS_DIR):
     os.mkdir(RESULTS_DIR)
 
-files = os.listdir(FORMULAS_DIR)
-paths = [os.path.join(FORMULAS_DIR, f) for f in files]
-instances = [TSPDomain(p, flip_factor=FLIP_FACTOR) for p in paths]
+files = os.listdir(DISTANCES_DIR)
+paths = [os.path.join(DISTANCES_DIR, f) for f in files]
+
+#paths.remove("./instances/distances\\kroA100-tsp_matrix.txt")
+paths.remove("./instances/distances\\eil51-tsp_matrix.txt")
+for path in paths:
+    print(path)
+
+
+instances = [TSPDomain(p, SWAP_factor=SWAP_FACTOR) for p in paths]
 mean_std_dict = {}
 
 fig = plt.figure(figsize=(12, 10))
@@ -61,7 +68,7 @@ for instance, ax in zip(instances, plot_axes):
     results_df = pd.DataFrame(results_dict)
     mean_std_dict.update({instance.get_label(): [(sa_max, np.mean(results_dict[sa_max]).item(), np.std(results_dict[sa_max]).item()) for sa_max in SA_MAX_VALUES]})
     ax.set_title(instance.get_label())
-    ax.set_ylabel('Cláusulas Insatisfeitas')
+    ax.set_ylabel('Distância Total')
     ax.set_xlabel('SaMax')
     results_df.plot(kind='box', ax=ax)
 
